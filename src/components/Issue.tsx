@@ -1,4 +1,3 @@
-import styles from './YmdSelector.module.scss';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createChildOptions, createParentOptions } from './Options';
 
