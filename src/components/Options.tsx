@@ -1,3 +1,6 @@
+/**
+ * 親 Issue 要素群生成装
+ */
 export const createParentOptions = () => {
     return ['parentTodo1', 'parentTodo2', 'parentTodo3'].map((issue) => {
         return (
@@ -8,6 +11,9 @@ export const createParentOptions = () => {
     });
 };
 
+/**
+ * 子 Issue 要素群生成装
+ */
 export const createChildOptions = (main: string) => {
     const childItems: { [id: string]: string[] } = {
         parentTodo1: ['A', 'B', 'C'],
