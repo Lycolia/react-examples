@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
-import { SelectBox } from './components/SelectBox';
 import { Issue, IssueState } from './components/Issue';
 
+/**
+ * 子のイベントを受けるやつ
+ */
 export const useIssue = () => {
     const [value, setValue] = useState<IssueState>({
         parent: 'parentTodo1',

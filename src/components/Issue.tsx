@@ -6,12 +6,18 @@ import { createChildOptions, createParentOptions } from './Options';
  * ステートの型
  */
 export type IssueState = {
+    /**
+     * 親Issue
+     */
     parent: string;
+    /**
+     * 子Issue
+     */
     child: string;
 };
 
 /**
- * コンポーネントのpropsの型
+ * コンポーネントの props の型
  */
 export type IssueProps = {
     /**
@@ -22,7 +28,7 @@ export type IssueProps = {
      * 親に値を返すコールバック
      * @param changeValue
      */
-    onChange(changeValue: { parent: string; child: string }): void;
+    onChange(changeValue: IssueState): void;
 };
 
 /**
@@ -62,22 +68,31 @@ export const useChild = (initialValue: string) => {
 //#endregion
 
 /**
- * 親Issueの選択に応じて子Issueのリストが変わるやつ
+ * 親 Issue の選択に応じて子 Issue のリストが変わるやつ
  * @param props
  */
 export const Issue = (props: IssueProps) => {
+    // 子の状態を常に見れるようにする
     const childRef = useRef<HTMLSelectElement>(null);
+    // 親の変更監視
     const parent = useParent(props.initial.parent);
+    // 子の変更監視
     const child = useChild(props.initial.child);
 
+    // TSX内に書くと無限に実行されるので結果だけ取る
     const memorizedParentOptions = createParentOptions();
+    // parent.value が変更されたときだけ更新されるMemoを作成する
     const memorizedChildOptions = useMemo(() => {
         return createChildOptions(parent.value);
     }, [parent.value]);
 
+    // DOM が更新された時でかつ parent.value か child.value が更新された時に走るやつ
     useEffect(() => {
+        // DOM 更新時に onChange が走らないので ref から取得する
         const chref = childRef.current;
+        // nullable回避
         const childValue = chref?.options[chref.selectedIndex].value ?? '';
+        // 親に伝達
         props.onChange({
             parent: parent.value,
             child: childValue,
@@ -86,21 +101,31 @@ export const Issue = (props: IssueProps) => {
 
     return (
         <>
+            {/**
+             * onChange={parent.onChange} だと常に呼ばれているため
+             * 関数に内包して onChange の時だけ走るようにする
+             * 常にコールされてると setState() -> render() -> useEffect() -> setState() の無限ループになり
+             * React から warning が出まくる。多分パフォーマンスも良くない
+             */}
             <select
                 onChange={(ev) => {
                     parent.onChange(ev);
                 }}
-                defaultValue={'parentTodo1'}
+                defaultValue={props.initial.parent}
             >
                 {memorizedParentOptions}
             </select>
             <span> / </span>
+            {/**
+             * onChange={child.onChange} は useEffect() のトリガー用
+             * child.value は親に返さない
+             */}
             <select
                 ref={childRef}
                 onChange={(ev) => {
                     child.onChange(ev);
                 }}
-                defaultValue={'A'}
+                defaultValue={props.initial.child}
             >
                 {memorizedChildOptions}
             </select>
